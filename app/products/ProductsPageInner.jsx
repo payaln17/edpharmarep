@@ -9,7 +9,7 @@ import { COMPOUNDS } from "../data/compounds";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "../components/CartContext";
 
-// BRAND THEMES
+// BRAND THEMES (unchanged)
 const BRAND_THEMES = {
   "ED Ajanta Pharma": {
     name: "Ajanta Pharma",
@@ -68,7 +68,6 @@ export default function ProductsPage() {
   const [activeCompound, setActiveCompound] = useState(null);
   const sectionRefs = useRef({});
   const productsStartRef = useRef(null);
-
 
   const theme = BRAND_THEMES[selectedBrand];
   const brandCompounds = COMPOUNDS[selectedBrand] || {};
@@ -135,42 +134,68 @@ export default function ProductsPage() {
   };
 
   const scrollToProductsStart = () => {
-  if (!productsStartRef.current) return;
+    if (!productsStartRef.current) return;
 
-  const offset = 140; // navbar + floating bar height
-  const y =
-    productsStartRef.current.getBoundingClientRect().top +
-    window.scrollY -
-    offset;
+    const offset = 140;
+    const y =
+      productsStartRef.current.getBoundingClientRect().top +
+      window.scrollY -
+      offset;
 
-  window.scrollTo({ top: y, behavior: "smooth" });
-};
+    window.scrollTo({ top: y, behavior: "smooth" });
+  };
 
+  // GLOBAL FILTER CHECK
+  const hasAnyResults = compoundNames.some((compound) => {
+    const slugs = brandCompounds[compound] || [];
 
-  // Compound Navigation Tabs
-  
+    const items = brandProducts.filter((p) => {
+      const slug = p.slug.toLowerCase();
+      const name = p.name.toLowerCase();
 
+      const belongsToCompound = slugs.some((key) => {
+        const k = key.toLowerCase();
+        return k === slug || k === name;
+      });
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      if (!belongsToCompound) return false;
+      if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
+
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const n = p.name?.toLowerCase() || "";
+        const d = p.description?.toLowerCase() || "";
+        return n.includes(q) || d.includes(q);
+      }
+
+      return true;
+    });
+
+    return items.length > 0;
+  });
+ return (
+    // UPDATED: Changed 'min-h-screen' to 'min-h-0' or 'w-full'. 
+    // Also removed the bg-gradient class from here (moved to the fixed div below).
+    <div className="w-full relative">
       <Navbar />
-     <Navbar />
       
-{/* Background Pattern */}
-<div className="fixed inset-0 -z-10">
-  <div className="absolute inset-0 opacity-[0.03]"
-       style={{
-         backgroundImage: `radial-gradient(${theme.primary} 1px, transparent 1px)`,
-         backgroundSize: '50px 50px'
-       }}>
-  </div>
-</div>
+      {/* Background Pattern & Gradient */}
+      {/* UPDATED: Added 'bg-gradient-to-b' here so the background stays fixed 
+          and full-screen, even if the content is short. */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-gray-50 to-white">
+        <div className="absolute inset-0 opacity-[0.03]"
+             style={{
+               backgroundImage: `radial-gradient(${theme.primary} 1px, transparent 1px)`,
+               backgroundSize: '50px 50px'
+             }}>
+        </div>
+      </div>
 
-{/* Floating Brand Selector */}
-<div className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
-  isScrolled ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-}`}>
-  <div className="flex items-center gap-2 bg-white rounded-full shadow-xl px-4 py-3 border">
+    {/* Floating Brand Selector - Medium Size & Responsive */}
+    <div className={`fixed top-18 sm:top-20 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${
+      isScrolled ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+    }`}>
+  <div className="flex items-center gap-1 sm:gap-2 bg-white rounded-full shadow-xl px-3 sm:px-4 py-2 sm:py-3 border">
     {BRAND_ORDER.map((brandKey) => {
       const b = BRAND_THEMES[brandKey];
       const isActive = selectedBrand === brandKey;
@@ -179,26 +204,26 @@ export default function ProductsPage() {
         <button
           key={brandKey}
           onClick={() => {
-  setSelectedBrand(brandKey);
-  setSearch("");
-  setCategoryFilter("All");
+            setSelectedBrand(brandKey);
+            setSearch("");
+            setCategoryFilter("All");
 
-  setTimeout(() => {
-    scrollToProductsStart();
-  }, 50);
-}}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+            setTimeout(() => {
+              scrollToProductsStart();
+            }, 50);
+          }}
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all ${
             isActive ? 'bg-blue-50' : 'hover:bg-gray-50'
           }`}
           style={{
             backgroundColor: isActive ? `${b.primary}10` : undefined,
           }}
         >
-          <div className="relative w-6 h-6">
+          <div className="relative w-5 h-5 sm:w-6 sm:h-6">
             <Image src={b.logo} alt={b.name} fill className="object-contain" />
           </div>
           {isActive && (
-            <span className="text-sm font-medium whitespace-nowrap" style={{ color: b.primary }}>
+            <span className="text-xs sm:text-sm font-medium whitespace-nowrap" style={{ color: b.primary }}>
               {b.name}
             </span>
           )}
@@ -208,156 +233,153 @@ export default function ProductsPage() {
   </div>
 </div>
 
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-{/* Brand Logos at the Top */}
-{/* Brand Logos at the Top */}
-<div className="mb-8">
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    {BRAND_ORDER.map((brandKey, index) => {
-      const b = BRAND_THEMES[brandKey];
-      const isActive = selectedBrand === brandKey;
-      
-      const isFirstLogo = index === 0; // Ajanta
-      const isSecondLogo = index === 1; // Centurion
-      const isThirdLogo = index === 2; // Sunrise
+      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
+        {/* Brand Logos at the Top - Made more responsive */}
+        <div className="mb-6 sm:mb-8">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            {BRAND_ORDER.map((brandKey, index) => {
+              const b = BRAND_THEMES[brandKey];
+              const isActive = selectedBrand === brandKey;
+              
+              const isFirstLogo = index === 0;
+              const isSecondLogo = index === 1;
+              const isThirdLogo = index === 2;
 
-      return (
-        <button
-          key={brandKey}
-          onClick={() => {
-            setSelectedBrand(brandKey);
-            setSearch("");
-            setCategoryFilter("All");
-          }}
-          // Container size fixed at h-48
-          className={`relative overflow-hidden rounded-2xl p-4 h-48 transition-all duration-500 transform hover:scale-[1.02] ${
-            isActive ? 'ring-4 ring-offset-2 scale-[1.02]' : 'hover:shadow-xl'
-          }`}
-          style={{
-            background: `linear-gradient(135deg, ${b.primary}15 0%, ${b.secondary}15 100%)`,
-            border: `2px solid ${isActive ? b.primary : 'transparent'}`,
-            outlineColor: b.primary,
-          }}
-        >
-          {isActive && (
-            <div className="absolute top-4 right-4 z-10">
-              <div className="w-3 h-3 rounded-full animate-pulse" style={{ backgroundColor: b.primary }}></div>
-            </div>
-          )}
-          
-          <div className="flex items-center justify-center h-full w-full">
-            {/* 
-               FINAL SIZING LOGIC:
-               1. Ajanta (1st): w-40 h-40 (Increased - Large Square)
-               2. Centurion (2nd): w-36 h-36 (Maintained Large Size - Not Decreased)
-               3. Sunrise (3rd): w-64 h-32 (Wide - Increased for Landscape Logo)
-            */}
-            <div className={`relative flex items-center justify-center transition-all duration-300 
-              ${isFirstLogo ? "w-40 h-40 md:w-48 md:h-48" : ""}
-              ${isSecondLogo ? "w-36 h-36 md:w-40 md:h-40" : ""}
-              ${isThirdLogo ? "w-60 h-32 md:w-72 md:h-40" : ""}
-            `}>
-              <Image
-                src={b.logo}
-                alt={b.name}
-                fill
-                className="object-contain drop-shadow-md"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-            </div>
+              return (
+                <button
+                  key={brandKey}
+                  onClick={() => {
+                    setSelectedBrand(brandKey);
+                    setSearch("");
+                    setCategoryFilter("All");
+                  }}
+                  // UPDATED: Fixed height (h-48) matches desktop view on all screens
+                  className={`relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-4 h-48 transition-all duration-500 transform hover:scale-[1.02] ${
+                    isActive ? 'ring-2 sm:ring-4 ring-offset-1 sm:ring-offset-2 scale-[1.02]' : 'hover:shadow-lg sm:hover:shadow-xl'
+                  }`}
+                  style={{
+                    background: `linear-gradient(135deg, ${b.primary}15 0%, ${b.secondary}15 100%)`,
+                    border: `1px solid ${isActive ? b.primary : 'transparent'}`,
+                    outlineColor: b.primary,
+                  }}
+                >
+                  {isActive && (
+                    <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ backgroundColor: b.primary }}></div>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-center h-full w-full">
+                    {/* UPDATED: Fixed width/height classes matching the original lg: values */}
+                    <div className={`relative flex items-center justify-center transition-all duration-300 
+                      ${isFirstLogo ? "w-40 h-40" : ""}
+                      ${isSecondLogo ? "w-36 h-36" : ""}
+                      ${isThirdLogo ? "w-60 h-32" : ""}
+                    `}>
+                      <Image
+                        src={b.logo}
+                        alt={b.name}
+                        fill
+                        className="object-contain drop-shadow-md"
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                        priority={index === 0}
+                      />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </button>
-      );
-    })}
+
+        </div>
+{/* Hero Section Below Logos */}
+        <div className="mb-8 sm:mb-12">
+          <div className="text-center mb-6 sm:mb-10">
+            {/* UPDATED: Increased base size from text-2xl to text-3xl for mobile */}
+            <h1 className="text-3xl xs:text-4xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 sm:mb-4">
+              <span className="bg-clip-text text-transparent" style={{ backgroundImage: theme.gradient }}>
+                {theme.name}
+              </span>{" "}
+              <span className="text-2xl xs:text-2xl sm:text-5xl block sm:inline">Products</span>
+            </h1>
+            
+            {/* UPDATED: Increased base size from text-sm to text-base for mobile */}
+            <p className="text-base xs:text-lg sm:text-lg text-gray-600 max-w-2xl mx-auto px-2">
+              Browse through our comprehensive range of pharmaceutical products
+            </p>
+          </div>
+{/* Advanced Filters - Made responsive */}
+<div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-4 sm:p-6 mb-6 sm:mb-8">
+  <div className="flex flex-col gap-4 sm:gap-6">
+    {/* Search Input - Full width on mobile */}
+    <div className="w-full">
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search products by name, composition, or description..."
+          className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-offset-1 sm:focus:ring-offset-2 focus:border-transparent transition-all"
+          style={{ '--tw-ring-color': theme.primary }}
+        />
+      </div>
+    </div>
+    
+    {/* Filters Row - Stack on mobile, row on sm+ */}
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+      {/* Compound Select */}
+      <div className="relative flex-1">
+        <select
+          value={selectedCompound}
+          onChange={(e) => {
+            setSelectedCompound(e.target.value);
+            scrollToCompound(e.target.value);
+          }}
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-offset-1 sm:focus:ring-offset-2 focus:border-transparent transition-all appearance-none bg-white"
+          style={{ '--tw-ring-color': theme.primary }}
+        >
+          <option value="">All Compounds</option>
+          {compoundNames.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 20 20">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 8l4 4 4-4" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Category Select */}
+      <div className="relative flex-1">
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-offset-1 sm:focus:ring-offset-2 focus:border-transparent transition-all appearance-none bg-white"
+          style={{ '--tw-ring-color': theme.primary }}
+        >
+          {brandCategories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 20 20">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 8l4 4 4-4" />
+          </svg>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-
-
-
-  {/* Hero Section Below Logos */}
-  <div className="mb-12">
-    <div className="text-center mb-10">
-      <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-        <span className="bg-clip-text text-transparent" style={{ backgroundImage: theme.gradient }}>
-          {theme.name}
-        </span> Products
-      </h1>
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-        Browse through our comprehensive range of pharmaceutical products
-      </p>
-    </div>
-
-          {/* Advanced Filters */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              <div className="flex-1 w-full">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search products by name, composition, or description..."
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-offset-2 focus:border-transparent transition-all"
-                    style={{ '--tw-ring-color': theme.primary }}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative">
-                  <select
-                    value={selectedCompound}
-                    onChange={(e) => {
-                      setSelectedCompound(e.target.value);
-                      scrollToCompound(e.target.value);
-                    }}
-                    className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-offset-2 focus:border-transparent transition-all appearance-none bg-white min-w-[200px]"
-                    style={{ '--tw-ring-color': theme.primary }}
-                  >
-                    <option value="">All Compounds</option>
-                    {compoundNames.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 20 20">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 8l4 4 4-4" />
-                    </svg>
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-offset-2 focus:border-transparent transition-all appearance-none bg-white min-w-[180px]"
-                    style={{ '--tw-ring-color': theme.primary }}
-                  >
-                    {brandCategories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 20 20">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 8l4 4 4-4" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
-       
-
-       {/* Products Sections */}
-<div ref={productsStartRef} className="pt-8">
-
+        {/* Products Sections */}
+        <div ref={productsStartRef} className="pt-4 sm:pt-8">
           {compoundNames.map((compound) => {
             const slugs = brandCompounds[compound] || [];
             
@@ -388,42 +410,42 @@ export default function ProductsPage() {
                 id={`compound-${makeId(compound)}`}
                 data-compound={compound}
                 ref={(el) => (sectionRefs.current[compound] = el)}
-                className="scroll-mt-32 mb-16"
+                className="scroll-mt-24 sm:scroll-mt-32 mb-10 sm:mb-16"
               >
                 {/* Compound Header */}
-                <div className="mb-10">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="mb-6 sm:mb-10">
+                  <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 xs:gap-0 mb-4 sm:mb-6">
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900">{compound}</h2>
-                      <p className="text-gray-600 mt-2">
+                      <h2 className="text-xl xs:text-2xl sm:text-3xl font-bold text-gray-900">{compound}</h2>
+                      <p className="text-gray-600 text-sm sm:text-base mt-1 sm:mt-2">
                         {items.length} product{items.length !== 1 ? 's' : ''} available
                       </p>
                     </div>
-                    <div className="px-4 py-2 rounded-full text-sm font-semibold"
+                    <div className="px-2 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold"
                          style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}>
                       {slugs.length} SKUs
                     </div>
                   </div>
-                  <div className="h-1 w-24 rounded-full" style={{ backgroundColor: theme.primary }}></div>
+                  <div className="h-1 w-16 sm:w-24 rounded-full" style={{ backgroundColor: theme.primary }}></div>
                 </div>
 
-                {/* Products List with Alternating Layout */}
-                <div className="space-y-8">
+                {/* Products List */}
+                <div className="space-y-6 sm:space-y-8">
                   {items.map((p, index) => {
-                    const isEven = index % 2 === 0; // Even index: image left, Odd index: image right
+                    const isEven = index % 2 === 0;
                     
                     return (
                       <div
                         key={p.slug}
-                        className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300"
+                        className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg overflow-hidden border border-gray-100 hover:shadow-lg sm:hover:shadow-xl transition-all duration-300"
                       >
-                        <div className="p-6">
-                          {/* MOBILE VIEW - Stacked layout */}
+                        <div className="p-4 sm:p-6">
+                          {/* MOBILE VIEW */}
                           <div className="lg:hidden">
-                            <div className="space-y-6">
+                            <div className="space-y-4 sm:space-y-6">
                               {/* Product Image */}
-                              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4">
-                                <div className="relative h-48">
+                              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                                <div className="relative h-40 sm:h-48">
                                   <Image
                                     src={p.image && p.image.trim() !== "" ? p.image : "/placeholder.jpg"}
                                     alt={p.name}
@@ -432,53 +454,53 @@ export default function ProductsPage() {
                                     sizes="100vw"
                                   />
                                 </div>
+                                <div className="text-center mt-3">
+                                  <span className="px-2 py-1 text-xs font-medium rounded"
+                                        style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}>
+                                    {p.category}
+                                  </span>
+                                </div>
                               </div>
 
                               {/* Product Details */}
-                              <div className="space-y-4">
+                              <div className="space-y-3 sm:space-y-4">
                                 <div>
-                                  <h3 className="text-xl font-bold text-gray-900 mb-2">{p.name}</h3>
-                                  <div className="flex items-center gap-3 mb-3">
-                                    <span className="px-2 py-1 text-xs font-medium rounded"
-                                          style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}>
-                                      {p.category}
-                                    </span>
-                                  </div>
+                                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">{p.name}</h3>
                                 </div>
 
                                 {/* Specifications */}
                                 <div className="space-y-2">
                                   {p.dosage && (
                                     <div className="flex items-start">
-                                      <span className="text-sm font-medium text-gray-700 min-w-[80px]">Dosage:</span>
-                                      <span className="text-sm text-gray-600 ml-2">{p.dosage}</span>
+                                      <span className="text-xs sm:text-sm font-medium text-gray-700 min-w-[70px] sm:min-w-[80px]">Dosage:</span>
+                                      <span className="text-xs sm:text-sm text-gray-600 ml-2">{p.dosage}</span>
                                     </div>
                                   )}
                                   {p.composition && (
                                     <div className="flex items-start">
-                                      <span className="text-sm font-medium text-gray-700 min-w-[80px]">Composition:</span>
-                                      <span className="text-sm text-gray-600 ml-2">{p.composition}</span>
+                                      <span className="text-xs sm:text-sm font-medium text-gray-700 min-w-[70px] sm:min-w-[80px]">Composition:</span>
+                                      <span className="text-xs sm:text-sm text-gray-600 ml-2">{p.composition}</span>
                                     </div>
                                   )}
                                   {p.pack_size && (
                                     <div className="flex items-start">
-                                      <span className="text-sm font-medium text-gray-700 min-w-[80px]">Pack Size:</span>
-                                      <span className="text-sm text-gray-600 ml-2">{p.pack_size}</span>
+                                      <span className="text-xs sm:text-sm font-medium text-gray-700 min-w-[70px] sm:min-w-[80px]">Pack Size:</span>
+                                      <span className="text-xs sm:text-sm text-gray-600 ml-2">{p.pack_size}</span>
                                     </div>
                                   )}
                                 </div>
                                 
                                 {p.description && (
-                                  <p className="text-gray-600 text-sm pt-3 border-t border-gray-100">
+                                  <p className="text-gray-600 text-xs sm:text-sm pt-3 border-t border-gray-100 line-clamp-2">
                                     {p.description}
                                   </p>
                                 )}
 
                                 {/* Action Buttons - Mobile */}
-                                <div className="flex flex-col gap-3 pt-4">
+                                <div className="flex flex-col gap-2 sm:gap-3 pt-3 sm:pt-4">
                                   <Link
                                     href={`/product/${p.slug}`}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg font-medium transition-all hover:bg-gray-50"
+                                    className="w-full inline-flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg font-medium text-sm sm:text-base transition-all hover:bg-gray-50"
                                     style={{
                                       borderColor: theme.primary,
                                       color: theme.primary,
@@ -489,7 +511,7 @@ export default function ProductsPage() {
 
                                   <button
                                     onClick={() => addToCart(p, 50, false, true)}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-white transition-all hover:opacity-90"
+                                    className="w-full inline-flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-sm sm:text-base text-white transition-all hover:opacity-90"
                                     style={{ 
                                       backgroundColor: theme.primary,
                                     }}
@@ -501,15 +523,14 @@ export default function ProductsPage() {
                             </div>
                           </div>
 
-                          {/* DESKTOP VIEW - Alternating layout */}
-                          <div className="hidden lg:grid lg:grid-cols-2 gap-8">
-                            {/* First product (index even): Image on left, details on right */}
+                          {/* DESKTOP VIEW */}
+                          <div className="hidden lg:grid lg:grid-cols-2 gap-6 sm:gap-8">
                             {isEven ? (
                               <>
-                                {/* Left Column - Image */}
+                                {/* Image Left */}
                                 <div className="flex items-center justify-center">
                                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 w-full">
-                                    <div className="relative h-48">
+                                    <div className="relative h-40 sm:h-48">
                                       <Image
                                         src={p.image && p.image.trim() !== "" ? p.image : "/placeholder.jpg"}
                                         alt={p.name}
@@ -527,29 +548,29 @@ export default function ProductsPage() {
                                   </div>
                                 </div>
 
-                                {/* Right Column - Details */}
+                                {/* Details Right */}
                                 <div className="flex flex-col justify-center">
-                                  <div className="space-y-4">
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{p.name}</h3>
+                                  <div className="space-y-3 sm:space-y-4">
+                                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">{p.name}</h3>
                                     
                                     {/* Specifications List */}
-                                    <div className="space-y-3">
+                                    <div className="space-y-2 sm:space-y-3">
                                       {p.dosage && (
                                         <div className="flex items-center">
-                                          <span className="text-sm font-medium text-gray-700 min-w-[100px]">Dosage:</span>
-                                          <span className="text-sm text-gray-600 ml-3">{p.dosage}</span>
+                                          <span className="text-sm font-medium text-gray-700 min-w-[90px] sm:min-w-[100px]">Dosage:</span>
+                                          <span className="text-sm text-gray-600 ml-2 sm:ml-3">{p.dosage}</span>
                                         </div>
                                       )}
                                       {p.composition && (
                                         <div className="flex items-center">
-                                          <span className="text-sm font-medium text-gray-700 min-w-[100px]">Composition:</span>
-                                          <span className="text-sm text-gray-600 ml-3">{p.composition}</span>
+                                          <span className="text-sm font-medium text-gray-700 min-w-[90px] sm:min-w-[100px]">Composition:</span>
+                                          <span className="text-sm text-gray-600 ml-2 sm:ml-3">{p.composition}</span>
                                         </div>
                                       )}
                                       {p.pack_size && (
                                         <div className="flex items-center">
-                                          <span className="text-sm font-medium text-gray-700 min-w-[100px]">Pack Size:</span>
-                                          <span className="text-sm text-gray-600 ml-3">{p.pack_size}</span>
+                                          <span className="text-sm font-medium text-gray-700 min-w-[90px] sm:min-w-[100px]">Pack Size:</span>
+                                          <span className="text-sm text-gray-600 ml-2 sm:ml-3">{p.pack_size}</span>
                                         </div>
                                       )}
                                     </div>
@@ -562,11 +583,11 @@ export default function ProductsPage() {
                                       </div>
                                     )}
 
-                                    {/* Action Buttons - Desktop */}
-                                    <div className="flex gap-4 pt-4">
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-3 sm:gap-4 pt-3 sm:pt-4">
                                       <Link
                                         href={`/product/${p.slug}`}
-                                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 border rounded-lg font-medium transition-all hover:bg-gray-50"
+                                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 border rounded-lg font-medium text-sm sm:text-base transition-all hover:bg-gray-50"
                                         style={{
                                           borderColor: theme.primary,
                                           color: theme.primary,
@@ -577,7 +598,7 @@ export default function ProductsPage() {
 
                                       <button
                                         onClick={() => addToCart(p, 50, false, true)}
-                                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-white transition-all hover:opacity-90"
+                                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg font-medium text-sm sm:text-base text-white transition-all hover:opacity-90"
                                         style={{ 
                                           backgroundColor: theme.primary,
                                         }}
@@ -590,30 +611,29 @@ export default function ProductsPage() {
                               </>
                             ) : (
                               <>
-                                {/* Second product (index odd): Details on left, image on right */}
-                                {/* Left Column - Details */}
+                                {/* Details Left */}
                                 <div className="flex flex-col justify-center">
-                                  <div className="space-y-4">
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{p.name}</h3>
+                                  <div className="space-y-3 sm:space-y-4">
+                                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">{p.name}</h3>
                                     
                                     {/* Specifications List */}
-                                    <div className="space-y-3">
+                                    <div className="space-y-2 sm:space-y-3">
                                       {p.dosage && (
                                         <div className="flex items-center">
-                                          <span className="text-sm font-medium text-gray-700 min-w-[100px]">Dosage:</span>
-                                          <span className="text-sm text-gray-600 ml-3">{p.dosage}</span>
+                                          <span className="text-sm font-medium text-gray-700 min-w-[90px] sm:min-w-[100px]">Dosage:</span>
+                                          <span className="text-sm text-gray-600 ml-2 sm:ml-3">{p.dosage}</span>
                                         </div>
                                       )}
                                       {p.composition && (
                                         <div className="flex items-center">
-                                          <span className="text-sm font-medium text-gray-700 min-w-[100px]">Composition:</span>
-                                          <span className="text-sm text-gray-600 ml-3">{p.composition}</span>
+                                          <span className="text-sm font-medium text-gray-700 min-w-[90px] sm:min-w-[100px]">Composition:</span>
+                                          <span className="text-sm text-gray-600 ml-2 sm:ml-3">{p.composition}</span>
                                         </div>
                                       )}
                                       {p.pack_size && (
                                         <div className="flex items-center">
-                                          <span className="text-sm font-medium text-gray-700 min-w-[100px]">Pack Size:</span>
-                                          <span className="text-sm text-gray-600 ml-3">{p.pack_size}</span>
+                                          <span className="text-sm font-medium text-gray-700 min-w-[90px] sm:min-w-[100px]">Pack Size:</span>
+                                          <span className="text-sm text-gray-600 ml-2 sm:ml-3">{p.pack_size}</span>
                                         </div>
                                       )}
                                     </div>
@@ -626,11 +646,11 @@ export default function ProductsPage() {
                                       </div>
                                     )}
 
-                                    {/* Action Buttons - Desktop */}
-                                    <div className="flex gap-4 pt-4">
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-3 sm:gap-4 pt-3 sm:pt-4">
                                       <Link
                                         href={`/product/${p.slug}`}
-                                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 border rounded-lg font-medium transition-all hover:bg-gray-50"
+                                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 border rounded-lg font-medium text-sm sm:text-base transition-all hover:bg-gray-50"
                                         style={{
                                           borderColor: theme.primary,
                                           color: theme.primary,
@@ -641,7 +661,7 @@ export default function ProductsPage() {
 
                                       <button
                                         onClick={() => addToCart(p, 50, false, true)}
-                                        className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium text-white transition-all hover:opacity-90"
+                                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg font-medium text-sm sm:text-base text-white transition-all hover:opacity-90"
                                         style={{ 
                                           backgroundColor: theme.primary,
                                         }}
@@ -652,10 +672,10 @@ export default function ProductsPage() {
                                   </div>
                                 </div>
 
-                                {/* Right Column - Image */}
+                                {/* Image Right */}
                                 <div className="flex items-center justify-center">
                                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 w-full">
-                                    <div className="relative h-48">
+                                    <div className="relative h-40 sm:h-48">
                                       <Image
                                         src={p.image && p.image.trim() !== "" ? p.image : "/placeholder.jpg"}
                                         alt={p.name}
@@ -684,41 +704,65 @@ export default function ProductsPage() {
             );
           })}
 
-          {/* Empty State */}
-          {compoundNames.length > 0 && compoundNames.every(compound => {
-            const slugs = brandCompounds[compound] || [];
-            const items = brandProducts.filter(p => slugs.includes(p.slug));
-            return items.length === 0;
-          }) && (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-24 h-24 rounded-full mb-6"
+                    {/* Empty State */}
+          {compoundNames.length > 0 && !hasAnyResults && (
+            <div className="text-center py-12 sm:py-20 px-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-24 sm:h-24 rounded-full mb-4 sm:mb-6"
                    style={{ 
                      background: `linear-gradient(135deg, ${theme.primary}15 0%, ${theme.secondary}15 100%)`,
                      border: `2px dashed ${theme.primary}40`
                    }}>
-                <svg className="w-12 h-12" style={{ color: theme.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 sm:w-12 sm:h-12" style={{ color: theme.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">No Products Found</h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">No Products Found</h3>
+              <p className="text-gray-600 text-sm sm:text-base max-w-md mx-auto mb-6 sm:mb-8">
                 We couldn't find any products matching your search criteria.
               </p>
-              <div className="flex flex-wrap gap-3 justify-center">
+              
+              {/* UPDATED CONTAINER: Stacks on mobile (col), Row on Desktop (sm:row) */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">
+                
                 <button
                   onClick={() => setSearch("")}
-                  className="px-6 py-3 rounded-xl border font-medium transition-all hover:bg-gray-50"
+                  // UPDATED: w-full on mobile, w-auto on sm+ (desktop)
+                  className="
+                    w-full sm:w-auto
+                    px-6
+                    py-2.5
+                    rounded-lg
+                    border
+                    font-medium
+                    text-sm
+                    transition-all
+                    hover:bg-gray-50
+                    whitespace-nowrap
+                  "
                   style={{ borderColor: theme.primary, color: theme.primary }}
                 >
                   Clear Search
                 </button>
+
                 <button
                   onClick={() => {
                     setSearch("");
                     setCategoryFilter("All");
                     setSelectedCompound(compoundNames[0]);
                   }}
-                  className="px-6 py-3 rounded-xl font-medium text-white transition-all hover:shadow-lg"
+                  // UPDATED: w-full on mobile, w-auto on sm+ (desktop)
+                  className="
+                    w-full sm:w-auto
+                    px-6
+                    py-2.5
+                    rounded-lg
+                    font-medium
+                    text-sm
+                    text-white
+                    transition-all
+                    hover:shadow-md
+                    whitespace-nowrap
+                  "
                   style={{ background: theme.gradient }}
                 >
                   Reset All Filters
@@ -727,14 +771,15 @@ export default function ProductsPage() {
             </div>
           )}
 
+
           {/* Floating Action Button for Mobile */}
-          <div className="fixed bottom-8 right-8 z-40 lg:hidden">
+          <div className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 z-40 lg:hidden">
             <button
               onClick={() => scrollToCompound(activeCompound || compoundNames[0])}
-              className="p-4 rounded-full shadow-2xl text-white animate-bounce"
+              className="p-3 sm:p-4 rounded-full shadow-2xl text-white animate-bounce"
               style={{ background: theme.gradient }}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 11l7-7 7 7M5 19l7-7 7 7" />
               </svg>
             </button>
