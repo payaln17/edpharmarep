@@ -29,22 +29,29 @@ export default function ProductsPage() {
     { key: "actions", label: "ACTIONS" },
   ];
 
-  // 🔁 Update status LIVE
+  // 🔁 Update status
   function updateStatus(id, status) {
     setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, status } : p))
+      prev.map((p) =>
+        p.id === id ? { ...p, status } : p
+      )
     );
   }
 
   // 🗑️ Delete
   function confirmDelete() {
-    setProducts((prev) => prev.filter((p) => p.id !== deleteId));
+    setProducts((prev) =>
+      prev.filter((p) => p.id !== deleteId)
+    );
     setDeleteId(null);
   }
 
   // ➕ Add product
   function addProduct(newP) {
-    setProducts((prev) => [{ ...newP, id: `PRD-${Date.now()}` }, ...prev]);
+    setProducts((prev) => [
+      { ...newP, id: `PRD-${Date.now()}` },
+      ...prev,
+    ]);
   }
 
   return (
@@ -52,7 +59,9 @@ export default function ProductsPage() {
       {/* HEADER */}
       <div className="rounded-2xl bg-white/85 border border-slate-200 shadow-sm p-4 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
         <div>
-          <div className="text-lg font-semibold text-slate-900">Products</div>
+          <div className="text-lg font-semibold text-slate-900">
+            Products
+          </div>
           <div className="text-sm text-slate-600">
             Manage product status & inventory
           </div>
@@ -74,55 +83,58 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* TABLE */}
-      <DataTable
-        columns={columns}
-        rows={filtered}
-        renderCell={(key, row) => {
-          if (key === "price") {
-            return (
-              <span className="font-semibold">
-                ₹{row.price.toLocaleString("en-IN")}
-              </span>
-            );
-          }
+      {/* DATA TABLE (DESKTOP + MOBILE handled internally) */}
+      <div className="w-full">
+        <DataTable
+          columns={columns}
+          rows={filtered}
+          renderCell={(key, row) => {
+            if (key === "price") {
+              return (
+                <span className="font-semibold">
+                  ₹{row.price.toLocaleString("en-IN")}
+                </span>
+              );
+            }
 
-          if (key === "status") {
-            return (
-              <select
-                value={row.status}
-                onChange={(e) => updateStatus(row.id, e.target.value)}
-                className="rounded-xl border border-slate-200 px-2 py-1 text-sm bg-white"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Active">Active</option>
-                {/* <option value="Inactive">Inactive</option> */}
-                <option value="Out of Stock">Out of Stock</option>
-              </select>
-            );
-          }
+            if (key === "status") {
+              return (
+                <select
+                  value={row.status}
+                  onChange={(e) =>
+                    updateStatus(row.id, e.target.value)
+                  }
+                  className="rounded-xl border border-slate-200 px-2 py-1 text-sm bg-white"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Active">Active</option>
+                  <option value="Out of Stock">Out of Stock</option>
+                </select>
+              );
+            }
 
-          if (key === "actions") {
-            return (
-              <button
-                onClick={() => setDeleteId(row.id)}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm"
-              >
-                <Trash2 className="w-4 h-4" /> Delete
-              </button>
-            );
-          }
+            if (key === "actions") {
+              return (
+                <button
+                  onClick={() => setDeleteId(row.id)}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-sm"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete
+                </button>
+              );
+            }
 
-          return row[key];
-        }}
-        mobileCardTitle={(row) => row.name}
-        mobileCardLines={(row) => [
-          { label: "SKU", value: row.sku },
-          { label: "Price", value: `₹${row.price}` },
-          { label: "Stock", value: String(row.stock) },
-          { label: "Status", value: row.status },
-        ]}
-      />
+            return row[key];
+          }}
+          mobileCardTitle={(row) => row.name}
+          mobileCardLines={(row) => [
+            { label: "SKU", value: row.sku },
+            { label: "Price", value: `₹${row.price}` },
+            { label: "Stock", value: String(row.stock) },
+            { label: "Status", value: row.status },
+          ]}
+        />
+      </div>
 
       {/* ADD PRODUCT MODAL */}
       {open && (
@@ -143,7 +155,9 @@ export default function ProductsPage() {
             onClick={() => setDeleteId(null)}
           />
           <div className="relative w-full max-w-md rounded-2xl bg-white border p-5">
-            <div className="text-lg font-semibold">Delete Product?</div>
+            <div className="text-lg font-semibold">
+              Delete Product?
+            </div>
             <div className="text-sm text-slate-600 mt-2">
               This action cannot be undone.
             </div>
@@ -179,9 +193,14 @@ function AddProductModal({ onClose, onCreate }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
       <div className="relative w-full max-w-lg rounded-2xl bg-white border p-5">
-        <div className="text-lg font-semibold">Add Product</div>
+        <div className="text-lg font-semibold">
+          Add Product
+        </div>
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
@@ -209,7 +228,10 @@ function AddProductModal({ onClose, onCreate }) {
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
-          <button onClick={onClose} className="border px-4 py-2 rounded-xl">
+          <button
+            onClick={onClose}
+            className="border px-4 py-2 rounded-xl"
+          >
             Cancel
           </button>
           <button
