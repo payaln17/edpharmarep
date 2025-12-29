@@ -69,6 +69,9 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  console.log("ORDER PARAM ID:", orderId);
+
+
   useEffect(() => {
   let mounted = true;
 

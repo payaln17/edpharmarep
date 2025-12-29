@@ -1,30 +1,21 @@
-import StatCard from "../components/admin/StatCard";
-import OrdersTable from "../components/admin/OrdersTable";
-import OrdersMobileCard from "../components/admin/OrdersMobileCard";
-import LogoutButton from "../components/LogoutButton";
+"use client";
 
-async function getOrders() {
-  const res = await fetch("http://localhost:3000/api/admin/orders", {
-    cache: "no-store",
-  });
+import StatCard from "@/components/admin/StatCard";
+import OrdersTable from "@/components/admin/OrdersTable";
+import OrdersMobileCard from "@/components/admin/OrdersMobileCard";
+import LogoutButton from "@/components/LogoutButton";
 
-  const data = await res.json();
-
-  // ✅ API returns ARRAY
-  return Array.isArray(data) ? data : [];
-}
-
-export default async function AdminPage() {
-  const orders = await getOrders();
-
+export default function AdminDashboardClient({ orders = [] }) {
+  // SAFE calculations (client side)
   const total = orders.length;
-  const pending = orders.filter(o => o.status === "Pending").length;
-  const approved = orders.filter(o => o.status === "Approved").length;
-  const shipped = orders.filter(o => o.status === "Shipped").length;
+  const pending = orders.filter((o) => o?.status === "Pending").length;
+  const approved = orders.filter((o) => o?.status === "Approved").length;
+  const shipped = orders.filter((o) => o?.status === "Shipped").length;
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <div className="bg-white rounded-2xl border p-4 space-y-4">
+      {/* TOP BAR */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-4">
         <div className="flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold">
             EdPharma Order Console
@@ -37,10 +28,12 @@ export default async function AdminPage() {
                 admin@edpharma.com
               </div>
             </div>
+
             <LogoutButton />
           </div>
         </div>
 
+        {/* STATS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Total Orders" value={total} />
           <StatCard title="Pending Review" value={pending} />
@@ -49,10 +42,12 @@ export default async function AdminPage() {
         </div>
       </div>
 
+      {/* DESKTOP */}
       <div className="hidden md:block">
         <OrdersTable orders={orders} />
       </div>
 
+      {/* MOBILE */}
       <div className="md:hidden">
         <OrdersMobileCard orders={orders} />
       </div>

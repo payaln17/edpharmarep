@@ -165,7 +165,7 @@ export default function CartDrawer() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateQty(item.slug, item.qty - 1);
+                          updateQty(item.slug, -50);
                         }}
                         className="w-7 h-7 rounded-full flex items-center justify-center text-gray-600 hover:bg-slate-200 transition"
                       >
@@ -179,7 +179,7 @@ export default function CartDrawer() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateQty(item.slug, item.qty + 1);
+                           updateQty(item.slug, +50);
                         }}
                         className="w-7 h-7 rounded-full flex items-center justify-center text-gray-600 hover:bg-slate-200 transition"
                       >

@@ -98,6 +98,8 @@ export default function OrdersPage() {
       if (!mounted) return;
 
       setOrders(data.ok ? data.orders : []);
+
+      console.log("ORDERS:", data.ok ? data.orders : []);
     } catch {
       setOrders([]);
     } finally {
@@ -212,7 +214,7 @@ export default function OrdersPage() {
               const itemsCount = Array.isArray(o.items) ? o.items.length : 0;
 
               return (
-                <Link key={o.orderId} href={`/orders/${o.orderId}`} className="block">
+                <Link key={o.orderId} href={`/orders/${o._id}`} className="block">
                   <div className="group bg-white/95 backdrop-blur-md border border-slate-100/70 rounded-xl p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ring-1 ring-slate-100/50 hover:ring-slate-200/70">
                     <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                       {/* LEFT CONTENT */}

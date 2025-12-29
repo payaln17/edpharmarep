@@ -134,10 +134,10 @@ export default async function ProductPage({ params }) {
           {/* PRICE */}
           {product.price && (
             <p
-              className="text-3xl sm:text-4xl font-semibold mt-8"
+              className="text-3xl sm:text-3xl font-semibold mt-8"
               style={{ color: theme.secondary }}
             >
-              ${product.price}
+              ₹ {product.price}
             </p>
           )}
 

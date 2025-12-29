@@ -50,11 +50,12 @@ export default function Navbar() {
       <nav className="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-md z-[1000]">
         <div className="max-w-7xl mx-auto px-6 h-[60px] flex items-center justify-between">
           {/* LOGO */}
-          <Link
-            href="/"
-            className="text-2xl font-extrabold text-blue-700 tracking-tight"
-          >
-            ED<span className="text-blue-500">Pharma</span>
+          <Link href="/" className="flex items-center">
+            <img
+              src="/EdLogo.svg"
+              alt="ED Pharma"
+              className="h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* ================= DESKTOP MENU ================= */}
@@ -173,11 +174,21 @@ export default function Navbar() {
               <X size={26} />
             </button>
 
-            <MobileLink href="/" onClick={() => setMenuOpen(false)}>Home</MobileLink>
-            <MobileLink href="/products" onClick={() => setMenuOpen(false)}>Products</MobileLink>
-            <MobileLink href="/about" onClick={() => setMenuOpen(false)}>About</MobileLink>
-            <MobileLink href="/contact" onClick={() => setMenuOpen(false)}>Contact</MobileLink>
-            <MobileLink href="/orders" onClick={() => setMenuOpen(false)}>My Orders</MobileLink>
+            <MobileLink href="/" onClick={() => setMenuOpen(false)}>
+              Home
+            </MobileLink>
+            <MobileLink href="/products" onClick={() => setMenuOpen(false)}>
+              Products
+            </MobileLink>
+            <MobileLink href="/about" onClick={() => setMenuOpen(false)}>
+              About
+            </MobileLink>
+            <MobileLink href="/contact" onClick={() => setMenuOpen(false)}>
+              Contact
+            </MobileLink>
+            <MobileLink href="/orders" onClick={() => setMenuOpen(false)}>
+              My Orders
+            </MobileLink>
 
             {/* ✅ MOBILE DOWNLOAD */}
             <a

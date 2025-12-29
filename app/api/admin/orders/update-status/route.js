@@ -1,5 +1,5 @@
 import dbConnect from "../../../../../lib/db";
-import Order from "../../../../../app/models/Order";
+import Order from "@/app/models/Order";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req) {
@@ -7,13 +7,6 @@ export async function PATCH(req) {
     await dbConnect();
 
     const { orderId, status } = await req.json();
-
-    if (!orderId || !status) {
-      return NextResponse.json(
-        { error: "Missing orderId or status" },
-        { status: 400 }
-      );
-    }
 
     await Order.findByIdAndUpdate(orderId, {
       status,

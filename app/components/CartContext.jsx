@@ -60,38 +60,49 @@ useEffect(() => {
   };
 
   /* ---------- ADD TO CART ---------- */
-  const addToCart = (product, qty = 50, options = {}) => {
-    const {
-      openDrawer: shouldOpenDrawer = false,
-      toast: shouldToast = true,
-    } = options;
+  const addToCart = (product, qty = 1, options = {}) => {
+  const {
+    openDrawer: shouldOpenDrawer = false,
+    toast: shouldToast = true,
+  } = options;
 
-    setCartItems((prev) => {
-      const existing = prev.find((p) => p.slug === product.slug);
+  setCartItems((prev) => {
+    const existing = prev.find((p) => p.slug === product.slug);
 
-      if (existing) {
-        return prev.map((p) =>
-          p.slug === product.slug
-            ? { ...p, qty: p.qty + qty }
-            : p
-        );
-      }
+    // 🟢 If product already in cart → +1 only
+    if (existing) {
+      return prev.map((p) =>
+        p.slug === product.slug
+          ? { ...p, qty: p.qty + 1 }
+          : p
+      );
+    }
 
-      return [...prev, { ...product, qty }];
-    });
+    // 🟢 First time add → qty = 1
+    return [...prev, { ...product, qty: 1 }];
+  });
 
-    if (shouldOpenDrawer) openDrawer();
-    if (shouldToast) showToast(`Added: ${product.name} (+${qty})`);
-  };
+  if (shouldOpenDrawer) openDrawer();
+  if (shouldToast) showToast(`Added: ${product.name}`);
+};
+
 
   /* ---------- UPDATE QTY ---------- */
-  const updateQty = (slug, qty) => {
-    setCartItems((prev) =>
-      prev.map((p) =>
-        p.slug === slug ? { ...p, qty: Math.max(50, qty) } : p
-      )
-    );
-  };
+  const updateQty = (slug, delta) => {
+  setCartItems((prev) =>
+    prev.map((p) => {
+      if (p.slug !== slug) return p;
+
+      const newQty = p.qty + delta;
+      
+      return {
+        ...p,
+        qty: Math.max(1, newQty), // ⛔ min 1 product
+      };
+    })
+  );
+};
+
 
   /* ---------- REMOVE ---------- */
   const removeFromCart = (slug) =>

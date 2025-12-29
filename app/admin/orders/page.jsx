@@ -14,9 +14,14 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch("/api/admin/orders");
       const data = await res.json();
-      setOrders(data.orders || []);
+
+      // ✅ MAIN FIX: API returns ARRAY, not { orders }
+      setOrders(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("FETCH ORDERS ERROR:", err);
+      setOrders([]);
     } finally {
-      setLoading(false); // ✅ REQUIRED
+      setLoading(false);
     }
   }
 
@@ -34,22 +39,22 @@ export default function AdminOrdersPage() {
   }
 
   return (
-  <div className="p-4 md:p-6 space-y-6 overflow-x-visible">
-    <h1 className="text-2xl font-bold">
-      EdPharma Order Console
-    </h1>
+    <div className="p-4 md:p-6 space-y-6 overflow-x-visible">
+      <h1 className="text-2xl font-bold">
+        EdPharma Order Console
+      </h1>
 
-    <OrdersFilters active={active} setActive={setActive} />
+      <OrdersFilters active={active} setActive={setActive} />
 
-    {/* MOBILE */}
-    <div className="block md:hidden">
-      <OrdersMobileCard orders={orders} refresh={fetchOrders} />
+      {/* MOBILE */}
+      <div className="block md:hidden">
+        <OrdersMobileCard orders={filteredOrders} refresh={fetchOrders} />
+      </div>
+
+      {/* DESKTOP */}
+      <div className="hidden md:block">
+        <OrdersTable orders={filteredOrders} refresh={fetchOrders} />
+      </div>
     </div>
-
-    {/* DESKTOP */}
-    <div className="hidden md:block">
-      <OrdersTable orders={orders} refresh={fetchOrders} />
-    </div>
-  </div>
-);
+  );
 }

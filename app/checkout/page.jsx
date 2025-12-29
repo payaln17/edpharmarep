@@ -14,6 +14,33 @@ import {
   CheckCircle,
 } from "lucide-react";
 
+const validateForm = (form, cartItems, payment) => {
+  if (cartItems.length === 0) return "Your cart is empty";
+
+  if (!form.fullName || form.fullName.length < 3)
+    return "Please enter a valid full name";
+
+  if (!form.email || !/^\S+@\S+\.\S+$/.test(form.email))
+    return "Please enter a valid email address";
+
+  if (!form.phone || !/^\d{10}$/.test(form.phone))
+    return "Phone number must be 10 digits";
+
+  if (!form.address || form.address.length < 10)
+    return "Please enter full delivery address";
+
+  if (!form.city) return "City is required";
+
+  if (!form.pincode || !/^\d{6}$/.test(form.pincode))
+    return "Pincode must be 6 digits";
+
+  if (!form.country) return "Country is required";
+
+  if (!payment) return "Please select a payment method";
+
+  return null; // ✅ all good
+};
+
 export default function CheckoutPage() {
   const { cartItems, totals, clearCart } = useCart();
 
@@ -29,45 +56,53 @@ export default function CheckoutPage() {
     country: "India",
   });
 
+  const isDisabled = validateForm(form, cartItems, payment) !== null;
+
   const onChange = (k) => (e) =>
     setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const placeOrder = async () => {
-  try {
-    const user = JSON.parse(localStorage.getItem("bio-user"));
+    try {
+      const user = JSON.parse(localStorage.getItem("bio-user"));
 
-    if (!user || !user._id) {
-      alert("Please login again");
-      return;
+      if (!user || !user._id) {
+        alert("Please login to continue");
+        return;
+      }
+
+      // ✅ VALIDATION CHECK
+      const error = validateForm(form, cartItems, payment);
+      if (error) {
+        alert(error);
+        return;
+      }
+
+      const res = await fetch("/api/orders/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user._id,
+          items: cartItems,
+          totals,
+          address: form,
+          email: user.email,
+          paymentMethod: payment,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        alert(data.message || "Order failed");
+        return;
+      }
+
+      clearCart();
+      window.location.href = `/order-success/${data.orderId}`;
+    } catch (e) {
+      alert("Network error. Please try again.");
     }
-
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: user._id,        // ✅ FIX
-        items: cartItems,
-        totals,
-        address: form,
-        email: user.email,       // ✅ FIX
-        paymentMethod: payment,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      alert(data.message || "Order failed");
-      return;
-    }
-
-    clearCart();
-    window.location.href = `/order-success/${data.orderId}`;
-  } catch (e) {
-    alert("Network error. Please try again.");
-  }
-};
-
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -289,13 +324,12 @@ export default function CheckoutPage() {
                 {/* CTA */}
                 <button
                   onClick={placeOrder}
+                  disabled={isDisabled}
                   className={[
                     "mt-5 w-full py-3.5 rounded-xl text-sm sm:text-base font-semibold",
-                    "bg-gradient-to-r from-[#0A4C89] via-[#0D5FA8] to-[#1B78D1]",
-                    "text-white shadow-lg shadow-[#0A4C89]/30",
-                    "hover:shadow-xl hover:shadow-[#0A4C89]/35 hover:translate-y-0.5",
-                    "transition-transform duration-150",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A4C89]",
+                    isDisabled
+                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                      : "bg-gradient-to-r from-[#0A4C89] via-[#0D5FA8] to-[#1B78D1] text-white shadow-lg shadow-[#0A4C89]/30 hover:shadow-xl hover:translate-y-0.5",
                   ].join(" ")}
                 >
                   Place Secure Order

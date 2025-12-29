@@ -100,7 +100,7 @@ export default function CartPage() {
                       {/* QTY */}
                       <div className="inline-flex items-center gap-3 rounded-full bg-slate-50 border border-slate-200 px-2.5 py-1.5">
                         <button
-                          onClick={() => updateQty(item.slug, item.qty - 50)}
+                          onClick={() => updateQty(item.slug, -50)}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-gray-600 hover:bg-slate-200 transition text-lg leading-none"
                         >
                           −
@@ -111,7 +111,7 @@ export default function CartPage() {
                         </span>
 
                         <button
-                          onClick={() => updateQty(item.slug, item.qty + 50)}
+                          onClick={() => updateQty(item.slug, +50)}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-gray-600 hover:bg-slate-200 transition text-lg leading-none"
                         >
                           +
@@ -190,7 +190,14 @@ export default function CartPage() {
                       }
                       router.push("/checkout");
                     }}
-                    className="w-full mt-5 py-3 rounded-xl ..."
+                    className={[
+                      "mt-5 w-full py-3.5 rounded-xl text-sm sm:text-base font-semibold",
+                      "bg-gradient-to-r from-[#0A4C89] via-[#0D5FA8] to-[#1B78D1]",
+                      "text-white shadow-lg shadow-[#0A4C89]/30",
+                      "hover:shadow-xl hover:shadow-[#0A4C89]/35 hover:translate-y-0.5",
+                      "transition-transform duration-150",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0A4C89]",
+                    ].join(" ")}
                   >
                     Proceed to checkout
                   </button>

@@ -269,7 +269,7 @@ export default function ProductsPage() {
                     </div>
                   )}
                   
-                  <div className="flex items-center justify-center h-full w-full">
+                  <div className="flex items-center justify-center h-full w-full cursor-pointer">
                     {/* UPDATED: Fixed width/height classes matching the original lg: values */}
                     <div className={`relative flex items-center justify-center transition-all duration-300 
                       ${isFirstLogo ? "w-40 h-40" : ""}
@@ -445,21 +445,21 @@ export default function ProductsPage() {
                             <div className="space-y-4 sm:space-y-6">
                               {/* Product Image */}
                               <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg sm:rounded-xl p-3 sm:p-4">
-                                <div className="relative h-40 sm:h-48">
+                                <div className="relative h-60 sm:h-88">
                                   <Image
                                     src={p.image && p.image.trim() !== "" ? p.image : "/placeholder.jpg"}
                                     alt={p.name}
                                     fill
-                                    className="object-contain"
-                                    sizes="100vw"
+                                    className="object-cover"
+                                    sizes="60vw"
                                   />
                                 </div>
-                                <div className="text-center mt-3">
+                                {/* <div className="text-center mt-3">
                                   <span className="px-2 py-1 text-xs font-medium rounded"
                                         style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}>
                                     {p.category}
                                   </span>
-                                </div>
+                                </div> */}
                               </div>
 
                               {/* Product Details */}
@@ -530,20 +530,20 @@ export default function ProductsPage() {
                                 {/* Image Left */}
                                 <div className="flex items-center justify-center">
                                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 w-full">
-                                    <div className="relative h-40 sm:h-48">
+                                    <div className="relative h-40 sm:h-88">
                                       <Image
                                         src={p.image && p.image.trim() !== "" ? p.image : "/placeholder.jpg"}
                                         alt={p.name}
                                         fill
-                                        className="object-contain"
-                                        sizes="50vw"
+                                        className="object-cover"
+                                        sizes="40vw"
                                       />
                                     </div>
                                     <div className="text-center mt-4">
-                                      <span className="px-3 py-1 rounded-full text-xs font-semibold text-white"
+                                      {/* <span className="px-3 py-1 rounded-full text-xs font-semibold text-white"
                                             style={{ backgroundColor: theme.primary }}>
                                         {p.category}
-                                      </span>
+                                      </span> */}
                                     </div>
                                   </div>
                                 </div>
@@ -675,12 +675,12 @@ export default function ProductsPage() {
                                 {/* Image Right */}
                                 <div className="flex items-center justify-center">
                                   <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 w-full">
-                                    <div className="relative h-40 sm:h-48">
+                                    <div className="relative h-40 sm:h-88">
                                       <Image
                                         src={p.image && p.image.trim() !== "" ? p.image : "/placeholder.jpg"}
                                         alt={p.name}
                                         fill
-                                        className="object-contain"
+                                        className="object-cover"
                                         sizes="50vw"
                                       />
                                     </div>

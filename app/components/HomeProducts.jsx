@@ -153,7 +153,7 @@ export default function HomeProducts({
                 {/* ACTIONS */}
                 <div className="mt-2 flex gap-3">
                   <Link
-                    href={`/products/${p.slug}`}
+                    href={`/product/${p.slug}`}
                     className="flex-1 text-center rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition"
                     style={{ backgroundColor: BRAND }}
                   >

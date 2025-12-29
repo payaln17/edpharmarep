@@ -11,7 +11,7 @@ import {
 
 export default function Topbar({ onMenu }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur -mt-21">
+    <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur">
       <div className="h-20 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
 
         {/* ================= LEFT ================= */}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LayoutDashboard, ShoppingBag, Package } from "lucide-react";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function RightSidebar({ open, onClose }) {
   return (
@@ -14,7 +15,7 @@ export default function RightSidebar({ open, onClose }) {
         />
       )}
 
-      {/* SIDEBAR (LEFT) */}
+      {/* SIDEBAR */}
       <aside
         className={`
           fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200
@@ -23,10 +24,12 @@ export default function RightSidebar({ open, onClose }) {
           md:translate-x-0 md:static md:block
         `}
       >
+        {/* HEADER */}
         <div className="p-6 font-bold text-lg border-b">
           Admin Panel
         </div>
 
+        {/* NAV ITEMS + LOGOUT */}
         <nav className="p-4 space-y-2">
           <SidebarItem
             href="/admin"
@@ -43,6 +46,9 @@ export default function RightSidebar({ open, onClose }) {
             icon={<Package size={18} />}
             label="Products"
           />
+
+          {/* ✅ LOGOUT INSIDE SIDEBAR */}
+          <LogoutButton />
         </nav>
       </aside>
     </>

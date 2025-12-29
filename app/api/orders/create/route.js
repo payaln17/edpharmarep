@@ -1,6 +1,6 @@
 //ed_pharma\app\api\orders\route.js
-import dbConnect from "../../../lib/db";
-import Order from "../../models/Order";
+import dbConnect from "@/lib/db";
+import Order from "../../../models/Order";
 import nodemailer from "nodemailer";
 
 

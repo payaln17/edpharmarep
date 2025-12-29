@@ -1,5 +1,7 @@
 "use client";
 
+import ActionMenu from "./ActionMenu";
+
 export default function OrdersMobileCard({ orders = [], refresh }) {
   async function updateStatus(orderId, status) {
     await fetch("/api/admin/orders/update-status", {
@@ -26,48 +28,55 @@ export default function OrdersMobileCard({ orders = [], refresh }) {
         return (
           <div
             key={key}
-            className="bg-white rounded-xl shadow p-4"
+            className="bg-white rounded-xl shadow p-4 space-y-2 relative overflow-visible"
           >
-            <div className="flex justify-between">
+            {/* TOP ROW */}
+            <div className="flex justify-between items-start gap-2">
               <div>
-                <div className="font-semibold">{order.orderId}</div>
+                <div className="font-semibold">
+                  {order.orderId}
+                </div>
+
                 <div className="text-xs text-gray-500">
-                  Patient: {order.patientName || order.patient?.name || "N/A"}
+                  {order.customerName ||
+                    order.user?.name ||
+                    ""}
+                </div>
+
+                <div className="text-xs text-gray-500">
+                  {order.email ||
+                    order.user?.email ||
+                    ""}
                 </div>
               </div>
 
-              {/* MOBILE DROPDOWN */}
-              <select
-                value={order.status}
-                onChange={(e) =>
-                  updateStatus(order._id, e.target.value)
-                }
-                className="border rounded px-2 py-1 text-sm"
-              >
-                <option value="Order Placed">Order Placed</option>
-                <option value="Pending Review">Pending Review</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Shipped">Shipped</option>
-              </select>
+              {/* ✅ FIXED ACTION MENU */}
+<div className="relative z-[9999] pointer-events-auto w-full max-w-[140px]">
+                <ActionMenu
+                  currentStatus={order.status}
+                  onChange={(status) =>
+                    updateStatus(order._id, status)
+                  }
+                />
+              </div>
             </div>
 
-            <div className="mt-3 text-sm space-y-1">
-              <div>
-                <span className="text-gray-500">Products:</span>{" "}
-                {(order.items || []).map(i => i.name).join(", ")}
-              </div>
+            {/* ADDRESS */}
+            <div className="text-xs text-gray-500">
+              Address:{" "}
+              {order.address
+                ? `${order.address.street || ""} ${
+                    order.address.city || ""
+                  }`
+                : "—"}
+            </div>
 
-              <div className="flex justify-between">
-                <span className="text-gray-500">Amount</span>
-                <span className="font-semibold">
-                  €
-                  {order.amount ??
-                    order.total ??
-                    order.totals?.grandTotal ??
-                    0}
-                </span>
-              </div>
+            {/* AMOUNT */}
+            <div className="flex justify-between text-sm pt-2">
+              <span className="text-gray-500">Amount</span>
+              <span className="font-semibold">
+                €{order.amount ?? 0}
+              </span>
             </div>
           </div>
         );

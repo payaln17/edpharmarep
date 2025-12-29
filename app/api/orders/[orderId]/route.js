@@ -2,12 +2,17 @@ import dbConnect from "@/lib/db";
 import Order from "../../../models/Order";
 import { NextResponse } from "next/server";
 
-export async function POST(req, { params }) {
+/* ================= ORDER DETAILS (POST) ================= */
+export async function POST(req, ctx) {
   try {
     await dbConnect();
 
-    const { orderId } = params;
+    // ✅ FIX: params is Promise in Next.js 16
+    const { orderId } = await ctx.params;
     const { userId } = await req.json();
+
+    console.log("API PARAM orderId:", orderId);
+    console.log("API BODY userId:", userId);
 
     if (!userId) {
       return NextResponse.json(
@@ -17,10 +22,9 @@ export async function POST(req, { params }) {
     }
 
     const order = await Order.findOne({
-  orderId,
-  userId: String(userId), // 🔥 FIX: force string match
-}).lean();
-
+      _id: orderId,
+      userId: userId,
+    }).lean();
 
     if (!order) {
       return NextResponse.json(
@@ -29,10 +33,7 @@ export async function POST(req, { params }) {
       );
     }
 
-    return NextResponse.json({
-      ok: true,
-      order,
-    });
+    return NextResponse.json({ ok: true, order });
   } catch (err) {
     console.error("ORDER_DETAILS_ERROR:", err);
     return NextResponse.json(
@@ -40,4 +41,17 @@ export async function POST(req, { params }) {
       { status: 500 }
     );
   }
+}
+
+/* ================= TEST GET (OPTIONAL) ================= */
+export async function GET(req, ctx) {
+  const { orderId } = await ctx.params;
+
+  console.log("✅ GET API HIT");
+  console.log("GET PARAM orderId:", orderId);
+
+  return NextResponse.json({
+    ok: true,
+    orderId,
+  });
 }
