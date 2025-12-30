@@ -15,7 +15,7 @@ export default function CartPage() {
   const hasItems = cartItems.length > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f5f9ff] via-[#edf3ff] to-[#e6eeff] -mt-21">
+    <div className="min-h-screen bg-gradient-to-br from-[#f5f9ff] via-[#edf3ff] to-[#e6eeff] ">
       <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
         {/* ===== PAGE TITLE ===== */}
         <div className="flex items-center justify-between gap-3 mb-6 md:mb-8">

@@ -130,24 +130,28 @@ export default function LoginPopup({ isOpen, onClose, onLoginSuccess }) {
       }
 
       // ✅ LOGIN SUCCESS
-      if (isLogin) {
-        const userObj = {
-          _id: data.user._id || data.user.id,
-          username: data.user.username,
-          email: data.user.email,
-        };
+      // ✅ LOGIN / SIGNUP SUCCESS
+if (isLogin) {
+  const userObj = {
+    _id: data.user._id || data.user.id,
+    username:
+      data.user.username ||
+      data.user.name ||
+      data.user.fullName ||
+      data.user.email?.split("@")[0],
+    email: data.user.email,
+  };
 
-        localStorage.setItem("bio-user", JSON.stringify(userObj));
+  localStorage.setItem("bio-user", JSON.stringify(userObj));
 
-        onLoginSuccess(userObj);
-        onClose();
-      }
+  onLoginSuccess(userObj);
+  onClose();
+} else {
+  // ✅ SIGNUP SUCCESS
+  setMessage("Account created! Please login.");
+  setIsLogin(true);
+}
 
-      // ✅ SIGNUP SUCCESS
-      else {
-        setMessage("Account created! Please login.");
-        setIsLogin(true);
-      }
     } catch (err) {
       if (err.name === "AbortError") return;
       setMessage("Server error. Please try again.");

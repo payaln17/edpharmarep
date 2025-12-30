@@ -21,11 +21,11 @@ export default function Home() {
 
       {/* HERO */}
       
-<section className="max-w-7xl mx-auto px-6 pt-25 backdrop-blur-sm sm:-mt-23">
+<section className="max-w-7xl mx-auto px-6 pt-3  rounded-2xl ">
   <div className="grid md:grid-cols-2 gap-12 items-center ">
 
     {/* LEFT CONTENT */}
-    <div >
+    <div className="backdrop-blur p-2">
       <h1 className="text-4xl md:text-5xl font-semibold text-[#0A2A73] leading-tight ">
         Trusted Pharmaceutical Manufacturing & Global Distribution
       </h1>

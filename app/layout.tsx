@@ -53,7 +53,7 @@ export default function RootLayout({
   <div
     className="fixed inset-0 -z-10 opacity-100 "
     style={{
-      backgroundImage: "url('/bg/ee.svg')",
+      backgroundImage: "url('/bg/banner.svg')",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
       backgroundSize: "cover",
@@ -73,7 +73,7 @@ export default function RootLayout({
           <Toast />
 
           {/* PAGE CONTENT */}
-          <main className="pt-20">{children}</main>
+          <main className="">{children}</main>
 
           {/* GLOBAL FOOTER */}
           <Footer />

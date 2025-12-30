@@ -2,6 +2,8 @@
 import dbConnect from "@/lib/db";
 import Order from "../../../models/Order";
 import nodemailer from "nodemailer";
+import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
 
 
 function makeOrderId() {
@@ -17,11 +19,41 @@ const transporter = nodemailer.createTransport({
 });
 
 
+
+
+
 /* ================= CREATE ORDER ================= */
 export async function POST(req) {
   try {
     const body = await req.json();
-  const { userId, email, items, totals, address, paymentMethod } = body;
+  const { items, totals, address, paymentMethod } = body;
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+
+  const cookieStore = await cookies();
+const token = cookieStore.get("auth")?.value;
+
+if (!token) {
+  return Response.json(
+    { ok: false, message: "Please login to continue" },
+    { status: 401 }
+  );
+}
+
+let userId;
+let userEmail;
+
+try {
+  const { payload } = await jwtVerify(token, secret);
+  userId = payload.id;
+  userEmail = payload.email;
+} catch {
+  return Response.json(
+    { ok: false, message: "Session expired. Please login again" },
+    { status: 401 }
+  );
+}
+
 
 
     // ✅ validation: items
@@ -51,19 +83,14 @@ export async function POST(req) {
     }
 
     //email validation 
-    if (!email) {
-  return Response.json(
-    { ok: false, message: "Email is required" },
-    { status: 400 }
-  );
-}
+    
 
-if (!userId) {
-  return Response.json(
-    { ok: false, message: "User not authenticated" },
-    { status: 401 }
-  );
-}
+// if (!userId) {
+//   return Response.json(
+//     { ok: false, message: "User not authenticated" },
+//     { status: 401 }
+//   );
+// }
 
 
 
@@ -85,7 +112,7 @@ if (!userId) {
 
     const order = await Order.create({
   userId,
-  userEmail: email,   // ✅ THIS IS THE FIX
+ userEmail: userEmail,   // ✅ THIS IS THE FIX
   orderId: makeOrderId(),
   items: items.map((i) => ({
     slug: i.slug,
@@ -110,7 +137,7 @@ if (!userId) {
 try {
   await transporter.sendMail({
     from: `"ED Pharma" <${process.env.SMTP_EMAIL}>`,
-    to: email,
+   to: userEmail,
     subject: "✅ Order Successful – ED Pharma",
     html: `
       <div style="font-family:Arial,sans-serif;line-height:1.6">

@@ -1,25 +1,42 @@
-import dbConnect from "../../../../lib/db";
+import dbConnect from "@/lib/db";
 import Order from "../../../models/Order";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 /**
- * Get orders for logged-in user only
+ * Get orders for logged-in user (cookie-based auth)
  */
-export async function POST(req) {
+export async function GET() {
   try {
     await dbConnect();
 
-    const { userId } = await req.json();
+    // 🔐 Read auth cookie
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth")?.value; 
 
-    // 🔐 auth check
-    if (!userId) {
+    if (!token) {
       return NextResponse.json(
-        { ok: false, message: "User not authenticated" },
+        { ok: false, message: "Please login to continue" },
         { status: 401 }
       );
     }
 
-    // 🔍 fetch only this user's orders
+    // 🔐 Verify JWT
+    let userId;
+    try {
+      const { payload } = await jwtVerify(token, secret);
+      userId = payload.id;
+    } catch {
+      return NextResponse.json(
+        { ok: false, message: "Session expired. Please login again" },
+        { status: 401 }
+      );
+    }
+
+    // 🔍 Fetch only this user's orders
     const orders = await Order.find({ userId })
       .sort({ createdAt: -1 })
       .lean();

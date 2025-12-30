@@ -79,25 +79,35 @@ export default function OrdersPage() {
     try {
       setLoading(true);
 
-      const user = JSON.parse(localStorage.getItem("bio-user"));
+      // const user = JSON.parse(localStorage.getItem("bio-user"));
 
-      if (!user?._id && !user?.id) {
-        router.push("/");
-        return;
-      }
+      // if (!user?._id && !user?.id) {
+      //   router.push("/");
+      //   return;
+      // }
+
+      // const res = await fetch("/api/orders/my", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     userId: user._id || user.id, // ✅ safe fallback
+      //   }),
+      // });
+      
 
       const res = await fetch("/api/orders/my", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user._id || user.id, // ✅ safe fallback
-        }),
-      });
+  method: "GET",
+  credentials: "include", // ✅ REQUIRED
+});
 
-      const data = await res.json();
-      if (!mounted) return;
+if (res.status === 401) {
+  router.push("/login"); // or "/"
+  return;
+}
 
-      setOrders(data.ok ? data.orders : []);
+const data = await res.json();
+setOrders(data.ok ? data.orders : []);
+
 
       console.log("ORDERS:", data.ok ? data.orders : []);
     } catch {
@@ -142,7 +152,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50/95 via-white to-blue-50/80 pt-6 pb-16 -mt-22">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50/95 via-white to-blue-50/80 pt-6 pb-16 -mt-1">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* HEADER */}
         <div className="mb-8">

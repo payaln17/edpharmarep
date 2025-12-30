@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Menu, X, Download } from "lucide-react";
+import { Menu, X, Download, Search } from "lucide-react";
 import { useState, useEffect } from "react";
-
+import { useRef } from "react";
 import { useCart } from "./CartContext";
 import LoginPopup from "./LoginPopup";
+import { products } from "@/app/data/products";
 
 /* ================= NAVBAR ================= */
 
@@ -21,12 +22,17 @@ export default function Navbar() {
 
   const router = useRouter();
   const { cartItems } = useCart();
+  const searchRef = useRef(null);
 
   /* ---------- STATES ---------- */
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [username, setUsername] = useState("");
+
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
 
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0);
 
@@ -42,6 +48,35 @@ export default function Navbar() {
     setUsername("");
     setProfileMenuOpen(false);
     router.push("/");
+  };
+  const handleSearchChange = (value) => {
+    setQuery(value);
+
+    if (!value) {
+      setSuggestions([]);
+      return;
+    }
+
+    // TODO: replace with real product data
+    const results = products
+      .filter((p) => {
+        const q = value.toLowerCase();
+        return (
+          p.name?.toLowerCase().includes(q) ||
+          p.brand?.toLowerCase().includes(q) ||
+          p.composition?.toLowerCase().includes(q)
+        );
+      })
+      .slice(0, 6);
+
+    setSuggestions(results);
+  };
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && query) {
+      setMobileSearchOpen(false);
+      router.push(`/products?search=${query}`);
+    }
   };
 
   return (
@@ -66,6 +101,37 @@ export default function Navbar() {
             <NavLink href="/terms">Terms</NavLink>
             <NavLink href="/contact">Contact</NavLink>
             <NavLink href="/orders">My Orders</NavLink>
+
+            {/* ================= SEARCH (DESKTOP) ================= */}
+            {/* <div className="relative">
+              {!searchOpen && (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="p-2 rounded-full hover:bg-blue-50 transition"
+                >
+                  <Search size={20} className="text-blue-700" />
+                </button>
+              )}
+
+              {searchOpen && (
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center bg-white border border-gray-200 rounded-full shadow-md px-3 py-1.5 w-[280px]">
+                  <Search size={16} className="text-gray-400 mr-2" />
+
+                  <input
+                    autoFocus
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search products..."
+                    className="flex-1 text-sm outline-none"
+                  />
+
+                  <button onClick={() => setSearchOpen(false)}>
+                    <X size={16} className="text-gray-400 hover:text-black" />
+                  </button>
+                </div>
+              )}
+            </div> */}
 
             {/* ✅ DOWNLOAD PDF BUTTON */}
             <a
@@ -138,7 +204,15 @@ export default function Navbar() {
           </div>
 
           {/* ================= MOBILE ================= */}
+
           <div className="flex items-center gap-4 md:hidden">
+            <button
+              onClick={() => setMobileSearchOpen((p) => !p)}
+              className="text-blue-700"
+            >
+              <Search size={26} />
+            </button>
+
             <button
               onClick={() => router.push("/cart")}
               className="relative text-2xl text-blue-700"
@@ -157,6 +231,52 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      {/* ================= MOBILE SEARCH ================= */}
+      {/* ================= MOBILE SEARCH BAR — BELOW NAVBAR ================= */}
+      {mobileSearchOpen && (
+        <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 relative z-[998]">
+          <div ref={searchRef} className="relative">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search products..."
+              value={query}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyDown={handleSearch}
+              className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm
+                   focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+
+            {suggestions.length > 0 && (
+              <div className="absolute top-full left-0 w-full bg-white border rounded-xl shadow-lg mt-2 z-50">
+                {suggestions.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setSuggestions([]);
+                      setQuery("");
+                      setMobileSearchOpen(false);
+                      router.push(`/product/${item.slug}`);
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm hover:bg-gray-100"
+                  >
+                    {item.name}
+                    <span className="block text-xs text-gray-500">
+                      {item.strength}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ================= MOBILE DRAWER ================= */}
       {menuOpen && (
